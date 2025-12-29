@@ -41,6 +41,7 @@ MODEL = "your_model"
 ### Running with ngrok
 
 1. **Start the agent**, the ngrok terminal will start in the background
+   **ngrok Web Interface defualts at http://localhost:4040**
 ```bash
 python journal_agent.py
 ```
