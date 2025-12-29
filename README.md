@@ -41,6 +41,7 @@ MODEL = "your_model"
 ### Running with ngrok
 
 1. **Start the agent**, the ngrok terminal will start in the background
+   
    **ngrok Web Interface defualts at http://localhost:4040**
 ```bash
 python journal_agent.py
@@ -74,3 +75,85 @@ TOC-2025-final/
 ```
 
 ## State Machine Diagram
+stateDiagram-v2
+    [*] --> Idle: Bot Started
+    
+    Idle --> ReceiveMessage: User sends message via LINE
+    
+    ReceiveMessage --> ParseIntent: Extract user_id & message text
+    
+    ParseIntent --> CallLLM_Parse: Send to LLM API
+    
+    CallLLM_Parse --> IntentIdentified: Parse JSON response
+    CallLLM_Parse --> Error: API Timeout/Failure
+    
+    IntentIdentified --> CheckIntent: Determine intent type
+    
+    CheckIntent --> StoreFlow: Intent = STORE
+    CheckIntent --> RetrieveFlow: Intent = RETRIEVE
+    CheckIntent --> RemoveFlow: Intent = REMOVE
+    CheckIntent --> Error: Intent = Unknown
+    
+    state StoreFlow {
+        [*] --> ValidateTask: Check task_description exists
+        ValidateTask --> CreateTask: Valid
+        ValidateTask --> ErrorMissingTask: Invalid (no description)
+        CreateTask --> SaveDatabase: Add task to list
+        SaveDatabase --> GenerateResponse_Store: Call LLM for natural response
+        GenerateResponse_Store --> SendSuccess: Response generated
+        SaveDatabase --> ErrorSaving: Database save failed
+    }
+    
+    state RetrieveFlow {
+        [*] --> FilterByUser: Filter tasks by user_id
+        FilterByUser --> FilterByDate: Check if date specified
+        FilterByDate --> CheckResults: Get matching tasks
+        CheckResults --> GenerateResponse_Retrieve: Tasks found, call LLM
+        CheckResults --> NoTasksFound: No tasks match
+        GenerateResponse_Retrieve --> SendSuccess: Response generated
+    }
+    
+    state RemoveFlow {
+        [*] --> CheckDate: Validate date provided
+        CheckDate --> FilterTasks: Find tasks by date & user_id
+        CheckDate --> ErrorNoDate: No date provided
+        FilterTasks --> RemoveTasks: Tasks found, remove them
+        FilterTasks --> NoTasksFound: No tasks match
+        RemoveTasks --> SaveDatabase_Remove: Update database
+        SaveDatabase_Remove --> GenerateResponse_Remove: Call LLM for natural response
+        SaveDatabase_Remove --> ErrorSaving: Database save failed
+        GenerateResponse_Remove --> SendSuccess: Response generated
+    }
+    
+    SendSuccess --> SendToLINE: Send reply via LINE API
+    ErrorMissingTask --> SendToLINE: Send error message
+    ErrorNoDate --> SendToLINE: Send error message
+    NoTasksFound --> SendToLINE: Send "no tasks" message
+    ErrorSaving --> SendToLINE: Send error message
+    Error --> SendToLINE: Send error message
+    
+    SendToLINE --> Idle: Wait for next message
+    
+    note right of ParseIntent
+        Uses LLM to extract:
+        - intent (STORE/RETRIEVE/REMOVE)
+        - task_description
+        - date, time, location
+    end note
+    
+    note right of StoreFlow
+        Stores task with:
+        - user_id (isolation)
+        - date, time, location
+        - created_at timestamp
+    end note
+    
+    note right of RetrieveFlow
+        Filters by user_id first
+        to ensure data isolation
+    end note
+    
+    note right of RemoveFlow
+        Only removes tasks matching
+        BOTH date AND user_id
+    end note
