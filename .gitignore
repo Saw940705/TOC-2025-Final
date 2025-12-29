@@ -8,9 +8,6 @@ venv/
 env/
 ENV/
 
-# Database
-journal_db.json
-
 # IDE
 .vscode/
 .idea/
@@ -22,7 +19,6 @@ journal_db.json
 Thumbs.db
 
 # Sensitive files
-config.py
 .env
 
 # Logs

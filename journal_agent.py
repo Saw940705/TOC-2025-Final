@@ -8,6 +8,9 @@ import json
 import os
 from datetime import datetime, timedelta
 import re
+import subprocess
+import time
+import atexit
 
 # Import configuration from config.py
 try:
@@ -19,9 +22,9 @@ try:
         MODEL,
         DB_FILE
     )
-    print("✓ Configuration loaded from config.py")
+    print("Configuration loaded from config.py")
 except ImportError:
-    print("⚠ Warning: config.py not found. Using default values.")
+    print("Warning: config.py not found. Using default values.")
     print("Please copy config.example.py to config.py and fill in your credentials.")
     # Fallback to default values
     LINE_CHANNEL_ACCESS_TOKEN = 'YOUR_CHANNEL_ACCESS_TOKEN'
@@ -281,6 +284,66 @@ Only return the response text, nothing else."""
 # Initialize the agent
 agent = JournalAgent()
 
+# Global variable to store ngrok process
+ngrok_process = None
+
+def start_ngrok(port=5000):
+    """Start ngrok tunnel"""
+    global ngrok_process
+    
+    print("\n=== Starting ngrok ===")
+    try:
+        # Start ngrok process
+        ngrok_process = subprocess.Popen(
+            ['ngrok', 'http', str(port)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        
+        # Wait a bit for ngrok to start
+        time.sleep(3)
+        
+        # Get ngrok URL from API
+        try:
+            response = requests.get('http://localhost:4040/api/tunnels', timeout=5)
+            if response.status_code == 200:
+                tunnels = response.json()['tunnels']
+                if tunnels:
+                    public_url = tunnels[0]['public_url']
+                    print(f"✓ ngrok started successfully!")
+                    print(f"✓ Public URL: {public_url}")
+                    print(f"✓ Webhook URL: {public_url}/callback")
+                    print(f"\n⚠ IMPORTANT: Set this webhook URL in LINE Developers Console:")
+                    print(f"   {public_url}/callback")
+                    print(f"\n📊 ngrok Web Interface: http://localhost:4040\n")
+                    return public_url
+        except Exception as e:
+            print(f"⚠ Could not retrieve ngrok URL automatically: {e}")
+            print("Please check http://localhost:4040 for the URL")
+        
+    except FileNotFoundError:
+        print("❌ Error: ngrok not found!")
+        print("Please install ngrok:")
+        print("  - Windows: Download from https://ngrok.com/download")
+        print("  - Mac: brew install ngrok")
+        print("  - Linux: Download from https://ngrok.com/download")
+        return None
+    except Exception as e:
+        print(f"❌ Error starting ngrok: {e}")
+        return None
+
+def stop_ngrok():
+    """Stop ngrok process"""
+    global ngrok_process
+    if ngrok_process:
+        print("\n=== Stopping ngrok ===")
+        ngrok_process.terminate()
+        ngrok_process.wait()
+        print("✓ ngrok stopped")
+
+# Register cleanup function
+atexit.register(stop_ngrok)
+
 @app.route("/callback", methods=['POST'])
 def callback():
     """LINE webhook callback"""
@@ -339,6 +402,21 @@ if __name__ == "__main__":
     print("\n=== LINE Journal Bot Starting ===")
     print(f"Database: {DB_FILE}")
     print(f"Tasks loaded: {len(agent.tasks)}")
-    print("Waiting for messages...\n")
+    
+    # Start ngrok automatically
+    ngrok_url = start_ngrok(port=5000)
+    
+    if ngrok_url:
+        print("=" * 60)
+        print("Ready to receive messages!")
+        print("=" * 60)
+    else:
+        print("\n⚠ Warning: ngrok not started. The bot will only be accessible locally.")
+        print("You can still run it, but LINE webhook won't work without ngrok or a public URL.\n")
+    
     # Run Flask app
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    try:
+        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+    except KeyboardInterrupt:
+        print("\n\nShutting down...")
+        stop_ngrok()

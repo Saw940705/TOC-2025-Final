@@ -1,4 +1,4 @@
-# LINE Journal Bot 📝
+# LINE Journal Bot
 
 A smart personal assistant chatbot for LINE that helps you manage tasks and schedules using natural language processing.
 
