@@ -171,7 +171,7 @@ Only return the response text, nothing else."""
                 "date": date,
                 "time": time,
                 "location": location,
-                "fallback": f"✓ Task saved: {task_desc}"
+                "fallback": f"Task saved: {task_desc}"
             }
             return self.generate_natural_response("STORE_TASK", details)
         else:
@@ -239,7 +239,7 @@ Only return the response text, nothing else."""
             details = {
                 "count": count,
                 "date": date,
-                "fallback": f"✓ Removed {count} task(s) from {date}."
+                "fallback": f"Removed {count} task(s) from {date}."
             }
             return self.generate_natural_response("REMOVE_TASKS", details)
         else:
@@ -310,26 +310,22 @@ def start_ngrok(port=5000):
                 tunnels = response.json()['tunnels']
                 if tunnels:
                     public_url = tunnels[0]['public_url']
-                    print(f"✓ ngrok started successfully!")
-                    print(f"✓ Public URL: {public_url}")
-                    print(f"✓ Webhook URL: {public_url}/callback")
-                    print(f"\n⚠ IMPORTANT: Set this webhook URL in LINE Developers Console:")
+                    print(f"ngrok started successfully!")
+                    print(f"Public URL: {public_url}")
+                    print(f"Webhook URL: {public_url}/callback")
+                    print(f"\nIMPORTANT: Set this webhook URL in LINE Developers Console:")
                     print(f"   {public_url}/callback")
-                    print(f"\n📊 ngrok Web Interface: http://localhost:4040\n")
+                    print(f"\nngrok Web Interface: http://localhost:4040\n")
                     return public_url
         except Exception as e:
-            print(f"⚠ Could not retrieve ngrok URL automatically: {e}")
+            print(f"Could not retrieve ngrok URL automatically: {e}")
             print("Please check http://localhost:4040 for the URL")
         
     except FileNotFoundError:
-        print("❌ Error: ngrok not found!")
-        print("Please install ngrok:")
-        print("  - Windows: Download from https://ngrok.com/download")
-        print("  - Mac: brew install ngrok")
-        print("  - Linux: Download from https://ngrok.com/download")
+        print("Error: ngrok not found!")
         return None
     except Exception as e:
-        print(f"❌ Error starting ngrok: {e}")
+        print(f"Error starting ngrok: {e}")
         return None
 
 def stop_ngrok():
@@ -339,7 +335,7 @@ def stop_ngrok():
         print("\n=== Stopping ngrok ===")
         ngrok_process.terminate()
         ngrok_process.wait()
-        print("✓ ngrok stopped")
+        print("ngrok stopped")
 
 # Register cleanup function
 atexit.register(stop_ngrok)
