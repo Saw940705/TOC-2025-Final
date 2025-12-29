@@ -5,15 +5,15 @@ A personal assistant chatbot for LINE that helps you manage schedules.
 ## Prerequisites
 
 - Python 3.8 or higher
-- LINE Developer Account
-- ngrok (for local testing)
+- LINE Developer Account, get from https://developers.line.biz/en/
+- ngrok (for local testing), download from https://ngrok.com/
 
 ## Installation
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/line-journal-bot.git
-cd line-journal-bot
+git clone https://github.com/Saw940705/TOC-2025-Final
+cd TOC-2025-final
 ```
 
 ### 2. Install dependencies
@@ -22,7 +22,6 @@ pip install -r requirements.txt
 ```
 
 ### 3. Configure LINE Bot and LLM API
-
 1. Create a LINE Messaging API channel at [LINE Developers Console](https://developers.line.biz/console/)
 2. Get your **Channel Access Token** and **Channel Secret**
 3. Get you **LLM API key** and **LLM API Url**
@@ -58,16 +57,19 @@ python journal_agent.py
 I have a meeting at NCKU tomorrow at 9:00
 What is my schedule tomorrow?
 Remind me to buy groceries at 5 PM today
-Remove all tasks tomorrow
+Remove all my tasks tomorrow
 ```
 
 ## Project Structure
 
 ```
-line-journal-bot/
-├── line_journal_bot.py    # Main bot code
-├── journal_db.json         # Database (auto-generated)
-├── requirements.txt        # Python dependencies
-├── .gitignore             # Git ignore file
-└── README.md              # This file
+TOC-2025-final/
+├── journal_agent.py       # Main bot code
+├── journal_db.json        # Database (auto-generated)
+├── requirements.txt       # Python dependencies
+├── config.py              # Config (sensitive inforamtion)
+├── .gitignore             
+└── README.md              
 ```
+
+## State Machine Diagram
