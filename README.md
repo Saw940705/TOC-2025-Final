@@ -75,6 +75,7 @@ TOC-2025-final/
 ```
 
 ## State Machine Diagram
+```mermaid
 stateDiagram-v2
     [*] --> Idle: Bot Started
     
@@ -157,3 +158,4 @@ stateDiagram-v2
         Only removes tasks matching
         BOTH date AND user_id
     end note
+```
