@@ -145,6 +145,7 @@ Operation: {operation_type}
 Details: {details}
 
 You should make the response friendly and human-like.
+If the operation is RETRIEVE, you should list the tasks found individually in a readable format.
 
 Only return the response text, nothing else."""
 
